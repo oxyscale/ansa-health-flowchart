@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ansa Health - Triage Call Automation - Oxyscale AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --primary: #E8470B;
+  --bg: #111827;
+  --card-bg: #1a2234;
+  --surface-bg: #0f1623;
+  --border: rgba(255,255,255,0.07);
+  --accent-border: rgba(232,71,11,0.3);
+  --orange-glow: rgba(232,71,11,0.15);
+  --text-dim: #8896ab;
+  --text-muted: #5a6a80;
+  --white: #ffffff;
+  --font: 'Inter', sans-serif;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Grid overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 80px 80px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Orange glow */
+body::after {
+  content: '';
+  position: fixed;
+  top: -220px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 900px;
+  background: radial-gradient(circle, rgba(232,71,11,0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 52px 24px 72px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ================================================================
+   HEADER
+   ================================================================ */
+.header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.header__brand {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+
+.header__brand span {
+  color: var(--primary);
+}
+
+.header__title {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 16px;
+}
+
+.header__title span {
+  color: var(--primary);
+}
+
+.header__subtitle {
+  font-size: 15px;
+  color: var(--text-dim);
+  max-width: 660px;
+  margin: 0 auto 36px;
+  line-height: 1.65;
+}
+
+/* ================================================================
+   LEGEND
+   ================================================================ */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.legend__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.legend__icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.legend__icon--ai {
+  background: var(--orange-glow);
+  border-color: var(--accent-border);
+  color: var(--primary);
+}
+
+/* ================================================================
+   PHASE
+   ================================================================ */
+.phase {
+  margin-bottom: 0;
+}
+
+.phase__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.phase__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--orange-glow);
+  border: 1px solid var(--accent-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.phase__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+
+.phase__name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+/* ================================================================
+   INFO CARDS (Phase 1)
+   ================================================================ */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.info-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 16px;
+}
+
+.info-card__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.info-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.info-card__text {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.65;
+}
+
+/* ================================================================
+   CONNECTORS
+   ================================================================ */
+.phase-connector {
+  width: 1px;
+  height: 48px;
+  margin: 0 auto;
+  background: linear-gradient(to bottom, var(--accent-border), rgba(232,71,11,0.05));
+  position: relative;
+}
+
+.phase-connector::after {
+  content: '';
+  width: 9px;
+  height: 9px;
+  background: var(--primary);
+  border-radius: 50%;
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.node-connector {
+  width: 1px;
+  height: 28px;
+  margin: 0 auto;
+  background: linear-gradient(to bottom, var(--accent-border), rgba(232,71,11,0.08));
+  position: relative;
+}
+
+.node-connector::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: var(--primary);
+  border-radius: 50%;
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ================================================================
+   NODE CARD
+   ================================================================ */
+.node {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  user-select: none;
+}
+
+.node:hover {
+  border-color: rgba(255,255,255,0.13);
+}
+
+.node--ai {
+  background: linear-gradient(135deg, rgba(232,71,11,0.13) 0%, rgba(232,71,11,0.04) 100%);
+  border-color: var(--accent-border);
+  box-shadow: 0 0 24px rgba(232,71,11,0.08);
+}
+
+.node--ai:hover {
+  border-color: rgba(232,71,11,0.5);
+}
+
+.node__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.node__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--surface-bg);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.node--ai .node__icon {
+  background: var(--orange-glow);
+  border-color: var(--accent-border);
+  color: var(--primary);
+}
+
+.node__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.node__label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ai-badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: var(--orange-glow);
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  line-height: 1.4;
+}
+
+.node__detail {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 5px;
+  line-height: 1.55;
+}
+
+.node__arrow {
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.node__arrow--open {
+  transform: rotate(90deg);
+}
+
+/* Expandable sub-items */
+.node__subs {
+  display: none;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.node__subs--show {
+  display: block;
+}
+
+.node__sub {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.node__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+.node--ai .node__dot {
+  background: var(--primary);
+}
+
+/* ================================================================
+   CALLOUT BOX
+   ================================================================ */
+.callout {
+  background: var(--surface-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.callout__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+/* ================================================================
+   TAGS
+   ================================================================ */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tag--halaxy   { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+.tag--cliniko  { background: rgba(59,130,246,0.15);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+.tag--wp       { background: rgba(59,130,246,0.15);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+.tag--email    { background: rgba(16,185,129,0.15);  color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+.tag--sms      { background: rgba(251,191,36,0.15);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+.tag--pms      { background: rgba(232,71,11,0.15);   color: #f97316; border: 1px solid rgba(232,71,11,0.3); }
+.tag--confirm  { background: rgba(16,185,129,0.15);  color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+.tag--priority { background: rgba(239,68,68,0.15);   color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+/* ================================================================
+   POSITION PILLS (inside decision nodes)
+   ================================================================ */
+.pos-pill {
+  background: var(--surface-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.pos-pill strong {
+  font-weight: 600;
+}
+
+.pos-pill--green  strong { color: #34d399; }
+.pos-pill--yellow strong { color: #fbbf24; }
+.pos-pill--blue   strong { color: #60a5fa; }
+
+/* ================================================================
+   SPLIT / TWO-COLUMN SECTION
+   ================================================================ */
+.split__label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
+
+.split__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.split__col-header {
+  text-align: center;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.split__col-header--book { border-bottom: 2px solid #3b82f6; }
+.split__col-header--call { border-bottom: 2px solid #10b981; }
+
+/* ================================================================
+   DESIGN PRINCIPLES
+   ================================================================ */
+.principles {
+  margin-top: 56px;
+  background: var(--surface-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 32px;
+}
+
+.principles__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.principles__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 24px;
+}
+
+.principles__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.principle-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 16px;
+}
+
+.principle-card__icon {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: var(--primary);
+}
+
+.principle-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.principle-card__text {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+/* ================================================================
+   FOOTER
+   ================================================================ */
+.footer {
+  text-align: center;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+.footer span {
+  color: var(--primary);
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 768px) {
+  .split__grid       { grid-template-columns: 1fr; }
+  .info-grid          { grid-template-columns: 1fr; }
+  .principles__grid   { grid-template-columns: 1fr; }
+  .header__title      { font-size: 24px; }
+  .phase__name        { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container" id="root"></div>
+
+<script>
+/* ================================================================
+   ICON MAP
+   ================================================================ */
+var ICONS = {
+  process:    '&#x2699;',
+  automation: '&#x26A1;',
+  decision:   '&#x25C6;',
+  trigger:    '&#x25B6;',
+  ai:         '&#x2726;',
+  future:     '&#x25CE;'
+};
+
+/* ================================================================
+   DATA: PHASE 1 - INFO CARDS
+   ================================================================ */
+var infoCards = [
+  {
+    label: 'Roster Structure',
+    title: '1-Hour Triage Blocks',
+    text: '<b>10-minute slots</b> per clinician per hour. Clinicians rotate on a daily/weekly cadence. Coverage: 9 hours/day, 90+ hours/week capacity across the business.'
+  },
+  {
+    label: 'Two PMS Platforms',
+    title: 'Halaxy + Cliniko',
+    text: 'Native PMS APIs for patient/appointment updates. <b>Cliniko</b> REST API for intake/booking. The routing key determines which PMS the system connects to.'
+  },
+  {
+    label: 'WordPress + APIs',
+    title: 'Website Intake Layer',
+    text: '<b>WordPress</b> website with submission/contact form capability via SMTP, API, or webhook integrations. Seamless user-facing intake forms connected to backend systems.'
+  }
+];
+
+/* ================================================================
+   DATA: PHASE 2 - PATIENT INTAKE
+   ================================================================ */
+var intakeNodes = [
+  {
+    type: 'ai',
+    label: 'Patient Fills Short Intake Form',
+    detail: 'A lightweight form on the website/landing page. Captures only the essentials. No invasive questions. Designed for low friction so we capture all interested patients quickly.',
+    subs: [
+      '<b>Fields:</b> First Name, Last Name, Phone Number, Service Type, Brief Reason',
+      '<b>Service Type is the routing key:</b> Psychology, Physiotherapy, Osteopathy, etc.',
+      'Determines which PMS the system queries: Halaxy, Cliniko, or future systems',
+      'Form kept deliberately short - under 60 seconds to complete'
+    ],
+    tags: [['Halaxy','tag--halaxy'],['Cliniko','tag--cliniko'],['WordPress','tag--wp']],
+    callout: null,
+    positions: null
+  }
+];
+
+/* ================================================================
+   DATA: BOOK A CALL NODES
+   ================================================================ */
+var bookNodes = [
+  {
+    type: 'ai',
+    label: 'Check Triage Roster &amp; Show Available Slots',
+    detail: 'Based on the visitor\'s selected service type, the agent queries the correct PMS to check available triage time slots within 1-hour blocks. The agent has built-in logic to only show available times.',
+    subs: [
+      'Agent queries the PMS (Halaxy or Cliniko) for available triage blocks',
+      'Only returns time slots that are still available and unbooked',
+      'Shows the next several days of availability to the visitor',
+      'Defaults to the earliest available slot for convenience'
+    ],
+    callout: {
+      label: 'How it works',
+      text: 'Agent queries the PMS (Halaxy or Cliniko) for available triage blocks. Only returns time slots still available. Shows the next X days of availability.'
+    },
+    tags: [['Halaxy API','tag--halaxy'],['Cliniko API','tag--cliniko']],
+    positions: null
+  },
+  {
+    type: 'process',
+    label: 'Visitor Selects a Slot',
+    detail: 'The available times are displayed grouped by day to the visitor in a standard picker. The visitor taps on a time slot (e.g. "Tues 9:10 AM"). This triggers a second check to confirm the slot is still available.',
+    subs: [
+      'Available times displayed grouped by day for easy selection',
+      'Each slot is a 10-minute block within the 1-hour triage window',
+      'Selection triggers a real-time revalidation against the PMS'
+    ],
+    callout: null, tags: [], positions: null
+  },
+  {
+    type: 'decision',
+    label: 'Race Condition Handled',
+    detail: 'If someone else books the same slot between the visitor checking availability and confirming their booking, the system handles the conflict gracefully.',
+    subs: [
+      'If double-booked, the visitor sees "Sorry, that time was just taken"',
+      'The visitor is automatically shown the next available slot',
+      'No dead-ends - always routes back to availability'
+    ],
+    callout: null, tags: [], positions: null
+  },
+  {
+    type: 'automation',
+    label: 'Appointment Created in PMS',
+    detail: 'An appointment record is created/populated in Halaxy or Cliniko. The patient record includes triage stage details and phone call information for the clinician.',
+    subs: [
+      'Appointment record auto-created in the correct PMS (Halaxy or Cliniko)',
+      'Patient note includes date, time, patient name, and phone number',
+      'PMS receives all form data: name, phone, reason, service type'
+    ],
+    callout: {
+      label: 'Patient note',
+      text: 'Triage call is confirmed for [Date/Time]. The clinician will call [Patient Name] on [Phone Number].'
+    },
+    tags: [['Halaxy','tag--halaxy'],['Cliniko','tag--cliniko'],['PMS Confirmed','tag--confirm']],
+    positions: null
+  },
+  {
+    type: 'automation',
+    label: 'Email + SMS with Patient Info',
+    detail: 'The clinician gets a notification via email and/or SMS with the upcoming patient\'s contact details, reason for calling, and the scheduled time.',
+    subs: [
+      'Clinician receives email with patient name, phone, reason, and time',
+      'SMS backup notification sent to clinician\'s mobile',
+      'Includes link to PMS appointment record for reference'
+    ],
+    callout: null,
+    tags: [['Email','tag--email'],['SMS','tag--sms']],
+    positions: null
+  },
+  {
+    type: 'automation',
+    label: 'Pre-Call SMS to Patient',
+    detail: '"Hi [Name], your assessment/triage call is in X minutes. Please keep your phone nearby."',
+    subs: [
+      'Automated reminder SMS sent ahead of the scheduled call',
+      'Reduces no-answer rates by keeping the patient alert',
+      'Includes clinic name for trust and recognition'
+    ],
+    callout: null,
+    tags: [['SMS Gateway','tag--sms']],
+    positions: null
+  },
+  {
+    type: 'process',
+    label: 'Clinician Calls Patient',
+    detail: 'Patient is contacted and triaged via clinical consultation. Clinician contacts the patient directly at the confirmed time using the details provided.',
+    subs: [
+      'Clinician calls patient at the scheduled time',
+      'Clinical triage conversation takes place',
+      'Outcome: patient is matched to the right specialist and booked in'
+    ],
+    callout: null, tags: [], positions: null
+  },
+  {
+    type: 'trigger',
+    label: '"Didn\'t Answer" &#x2192; Priority List',
+    detail: 'If the patient doesn\'t answer, the lead rolls into the Priority Call List for the next available triage clinician to follow up.',
+    subs: [
+      'Missed call triggers automatic addition to the Priority Call List',
+      'Next available triage clinician picks up the lead',
+      'Patient receives SMS: "Sorry we missed you, we will call back soon"'
+    ],
+    callout: null,
+    tags: [['Priority Queue','tag--priority']],
+    positions: null
+  }
+];
+
+/* ================================================================
+   DATA: CALL ME NOW NODES
+   ================================================================ */
+var callNodes = [
+  {
+    type: 'ai',
+    label: 'Find Who is Currently On Triage',
+    detail: 'The agent scans the current day and 1-hour triage time slots to find the clinician(s) actively rostered right now. It checks who is free and available for an immediate callback.',
+    subs: [
+      'AI scans current roster to find the on-duty triage clinician',
+      'Checks the clinician is not already in an active call',
+      'Falls back to the next available clinician if the first is busy',
+      'Checks the PMS for current real-time status'
+    ],
+    callout: null,
+    tags: [['Halaxy API','tag--halaxy'],['Cliniko API','tag--cliniko']],
+    positions: null
+  },
+  {
+    type: 'automation',
+    label: 'Visitor Gets Immediate Confirmation',
+    detail: 'The visitor sees a confirmation instantly: "You\'re in - we\'ll call you within 20 minutes." Keeps the visitor present and builds trust in the process.',
+    subs: [
+      'Confirmation message displayed immediately on screen',
+      'Sets expectation: "You will receive a phone call within 20 minutes"',
+      'SMS confirmation also sent to the visitor\'s phone number'
+    ],
+    callout: null,
+    tags: [['SMS Confirm','tag--confirm']],
+    positions: null
+  },
+  {
+    type: 'ai',
+    label: 'Email + SMS with Patient Info &amp; Callback Request',
+    detail: 'The agent sends the triage clinician an email and SMS with patient name, phone number, reason for calling. SMS is sent first for speed. Marked as urgent/immediate request.',
+    subs: [
+      'Clinician receives instant notification with all patient details',
+      'Marked as "Urgent - Callback Requested" for immediate action',
+      'Includes complete intake information: name, phone, reason, service type'
+    ],
+    callout: null,
+    tags: [['Email','tag--email'],['SMS','tag--sms']],
+    positions: null
+  },
+  {
+    type: 'decision',
+    label: 'Clinician Busy / Multiple Requests',
+    detail: 'If the triage clinician is on a call or in an existing triage session, the system queues requests and manages priority dynamically based on their position in line.',
+    subs: [],
+    callout: null,
+    tags: [],
+    positions: [
+      { cls: 'pos-pill--green',  label: 'Position 1 (you\'re next)', text: 'A clinician will call you shortly. Currently completing a triage session - you\'re next in the queue.' },
+      { cls: 'pos-pill--yellow', label: 'Position 2', text: '2 ahead. Expect a call within 20-30 minutes. A callback SMS will let you know before your call.' },
+      { cls: 'pos-pill--blue',   label: 'Position 3', text: 'Longer wait. Patient offered option to switch to "Book a Call" for a guaranteed time slot.' }
+    ]
+  },
+  {
+    type: 'process',
+    label: 'Clinician Calls Patient Back',
+    detail: 'Clinician receives the info, triages, and calls the patient. Same flow as the "Book a Call" path from here - clinical triage, specialist matching, and booking.',
+    subs: [
+      'Clinician reviews patient details before calling',
+      'Clinical triage conversation takes place',
+      'Patient matched to the right specialist and appointment booked'
+    ],
+    callout: null, tags: [], positions: null
+  },
+  {
+    type: 'trigger',
+    label: '"Didn\'t Answer" &#x2192; Priority List',
+    detail: 'Lead rolls into the Priority Call List for the next available triage clinician to follow up.',
+    subs: [
+      'Missed call triggers automatic addition to the Priority Call List',
+      'Next available triage clinician picks up the lead',
+      'Patient receives SMS: "Sorry we missed you, we will call back soon"'
+    ],
+    callout: null,
+    tags: [['Priority Queue','tag--priority']],
+    positions: null
+  }
+];
+
+/* ================================================================
+   DATA: PRIORITY FOLLOW-UP
+   ================================================================ */
+var priorityNode = {
+  type: 'ai',
+  label: 'Priority Call List',
+  detail: 'Uncompleted triage call patients get added to a shared queue. The next available triage clinician picks up from the list. Oldest leads are picked first. The patient gets an SMS: "Sorry we missed you - we\'ll call back soon." A clinician will call back.',
+  subs: [
+    'Shared queue visible to all triage clinicians',
+    'Oldest leads surfaced first (FIFO)',
+    'Patient receives automatic SMS notification',
+    'The next available triage clinician picks up the callback',
+    'Escalation: if not contacted within X hours, alert sent to clinic manager'
+  ],
+  callout: null,
+  tags: [['Priority Queue','tag--priority'],['SMS','tag--sms']],
+  positions: null
+};
+
+
+
+/* ================================================================
+   DATA: DESIGN PRINCIPLES
+   ================================================================ */
+var principles = [
+  {
+    icon: '&#x26A1;',
+    title: 'Minimal Friction',
+    text: 'Capture name, phone, and service type only. No invasive 20-question forms. Get the patient into a human conversation as fast as possible.'
+  },
+  {
+    icon: '&#x2695;',
+    title: 'Human-First Triage',
+    text: 'AI handles scheduling, routing, and notifications. Humans handle the clinical conversation. The right balance of automation and care.'
+  },
+  {
+    icon: '&#x21BB;',
+    title: 'System Agnostic',
+    text: 'Works across Halaxy, Cliniko, and future PMS platforms. As new clinics are acquired, the automation layer simply connects to the new system.'
+  }
+];
+
+/* ================================================================
+   RENDER HELPERS
+   ================================================================ */
+function renderNode(n) {
+  var isAi    = (n.type === 'ai');
+  var cls     = isAi ? ' node--ai' : '';
+  var badge   = isAi ? ' <span class="ai-badge">&#x2726; AI</span>' : '';
+  var icon    = ICONS[n.type] || ICONS.process;
+
+  /* Sub-items */
+  var subsHTML = '';
+  if ((n.subs && n.subs.length) || n.positions) {
+    subsHTML += '<div class="node__subs">';
+    if (n.subs) {
+      for (var i = 0; i < n.subs.length; i++) {
+        subsHTML += '<div class="node__sub"><span class="node__dot"></span><span>' + n.subs[i] + '</span></div>';
+      }
+    }
+    if (n.positions) {
+      for (var j = 0; j < n.positions.length; j++) {
+        var p = n.positions[j];
+        subsHTML += '<div class="pos-pill ' + p.cls + '"><strong>' + p.label + ':</strong> ' + p.text + '</div>';
+      }
+    }
+    subsHTML += '</div>';
+  }
+
+  /* Callout */
+  var calloutHTML = '';
+  if (n.callout) {
+    calloutHTML = '<div class="callout"><div class="callout__label">' + n.callout.label + '</div>' + n.callout.text + '</div>';
+  }
+
+  /* Position pills (inline, not in subs) */
+  var posHTML = '';
+  if (n.positions) {
+    for (var k = 0; k < n.positions.length; k++) {
+      var pp = n.positions[k];
+      posHTML += '<div class="pos-pill ' + pp.cls + '"><strong>' + pp.label + ':</strong> ' + pp.text + '</div>';
+    }
+  }
+
+  /* Tags */
+  var tagsHTML = '';
+  if (n.tags && n.tags.length) {
+    tagsHTML = '<div class="tags">';
+    for (var t = 0; t < n.tags.length; t++) {
+      tagsHTML += '<span class="tag ' + n.tags[t][1] + '">' + n.tags[t][0] + '</span>';
+    }
+    tagsHTML += '</div>';
+  }
+
+  return '<div class="node' + cls + '" onclick="toggleNode(this)">' +
+    '<div class="node__top">' +
+      '<div class="node__icon">' + icon + '</div>' +
+      '<div class="node__body">' +
+        '<div class="node__label">' + n.label + badge + '</div>' +
+        '<div class="node__detail">' + n.detail + '</div>' +
+        calloutHTML +
+        posHTML +
+        tagsHTML +
+      '</div>' +
+      '<div class="node__arrow">&#x25B6;</div>' +
+    '</div>' +
+    subsHTML +
+  '</div>';
+}
+
+function nodeConn() {
+  return '<div class="node-connector"></div>';
+}
+
+function phaseConn() {
+  return '<div class="phase-connector"></div>';
+}
+
+function renderNodes(arr) {
+  var h = '';
+  for (var i = 0; i < arr.length; i++) {
+    if (i > 0) h += nodeConn();
+    h += renderNode(arr[i]);
+  }
+  return h;
+}
+
+/* ================================================================
+   BUILD THE PAGE
+   ================================================================ */
+var html = '';
+
+/* ---- HEADER ---- */
+html += '<div class="header">';
+html += '  <div class="header__brand">OXYSCALE <span>AI</span></div>';
+html += '  <h1 class="header__title">Ansa Health - <span>Triage Call Automation</span></h1>';
+html += '  <p class="header__subtitle">End-to-end patient intake and triage scheduling system. Two pathways - "Book a Call" and "Call Me Now" - powered by AI agents that connect your website to Halaxy and Cliniko in real time.</p>';
+html += '  <div class="legend">';
+html += '    <div class="legend__item"><div class="legend__icon">&#x2699;</div>Process</div>';
+html += '    <div class="legend__item"><div class="legend__icon">&#x26A1;</div>Automation</div>';
+html += '    <div class="legend__item"><div class="legend__icon">&#x25C6;</div>Decision</div>';
+html += '    <div class="legend__item"><div class="legend__icon">&#x25B6;</div>Trigger</div>';
+html += '    <div class="legend__item"><div class="legend__icon legend__icon--ai">&#x2726;</div>AI Powered</div>';
+html += '    <div class="legend__item"><div class="legend__icon">&#x25CE;</div>Future</div>';
+html += '  </div>';
+html += '</div>';
+
+/* ---- PHASE 1: SYSTEM FOUNDATION ---- */
+html += '<div class="phase">';
+html += '  <div class="phase__header">';
+html += '    <div class="phase__icon">&#x229E;</div>';
+html += '    <div>';
+html += '      <div class="phase__label">Phase 1</div>';
+html += '      <div class="phase__name">System Foundation</div>';
+html += '    </div>';
+html += '  </div>';
+html += '  <div class="info-grid">';
+for (var ic = 0; ic < infoCards.length; ic++) {
+  var c = infoCards[ic];
+  html += '<div class="info-card">';
+  html += '  <div class="info-card__label">' + c.label + '</div>';
+  html += '  <div class="info-card__title">' + c.title + '</div>';
+  html += '  <div class="info-card__text">' + c.text + '</div>';
+  html += '</div>';
+}
+html += '  </div>';
+html += '</div>';
+
+html += phaseConn();
+
+/* ---- PHASE 2: PATIENT INTAKE ---- */
+html += '<div class="phase">';
+html += '  <div class="phase__header">';
+html += '    <div class="phase__icon">&#x2295;</div>';
+html += '    <div>';
+html += '      <div class="phase__label">Phase 2</div>';
+html += '      <div class="phase__name">Patient Intake</div>';
+html += '    </div>';
+html += '  </div>';
+html += renderNodes(intakeNodes);
+html += '</div>';
+
+html += phaseConn();
+
+/* ---- PHASE 3: PATIENT CHOOSES (SPLIT) ---- */
+html += '<div class="phase">';
+html += '  <div class="phase__header">';
+html += '    <div class="phase__icon">&#x2298;</div>';
+html += '    <div>';
+html += '      <div class="phase__label">Phase 3</div>';
+html += '      <div class="phase__name">Patient Chooses a Pathway</div>';
+html += '    </div>';
+html += '  </div>';
+html += '  <div class="split__label">&#x25C6; Patient Chooses</div>';
+html += '  <div class="split__grid">';
+
+/* Column: Book a Call */
+html += '    <div>';
+html += '      <div class="split__col-header split__col-header--book">&#x25F2; Book a Call</div>';
+html += nodeConn();
+html += renderNodes(bookNodes);
+html += '    </div>';
+
+/* Column: Call Me Now */
+html += '    <div>';
+html += '      <div class="split__col-header split__col-header--call">&#x260E; Call Me Now</div>';
+html += nodeConn();
+html += renderNodes(callNodes);
+html += '    </div>';
+
+html += '  </div>';
+html += '</div>';
+
+html += phaseConn();
+
+/* ---- PHASE 4: PRIORITY FOLLOW-UP ---- */
+html += '<div class="phase">';
+html += '  <div class="phase__header">';
+html += '    <div class="phase__icon">&#x21BB;</div>';
+html += '    <div>';
+html += '      <div class="phase__label">Phase 4</div>';
+html += '      <div class="phase__name">Priority Follow-Up</div>';
+html += '    </div>';
+html += '  </div>';
+html += renderNode(priorityNode);
+html += '</div>';
+
+/* ---- DESIGN PRINCIPLES ---- */
+html += '<div class="principles">';
+html += '  <div class="principles__label">Design Principles</div>';
+html += '  <div class="principles__title">Guiding This Automation</div>';
+html += '  <div class="principles__grid">';
+for (var pi = 0; pi < principles.length; pi++) {
+  var pr = principles[pi];
+  html += '<div class="principle-card">';
+  html += '  <div class="principle-card__icon">' + pr.icon + '</div>';
+  html += '  <div class="principle-card__title">' + pr.title + '</div>';
+  html += '  <div class="principle-card__text">' + pr.text + '</div>';
+  html += '</div>';
+}
+html += '  </div>';
+html += '</div>';
+
+/* ---- FOOTER ---- */
+html += '<div class="footer">';
+html += '  Designed and proposed by <span>Oxyscale AI</span> &#x00B7; Ansa Health Triage Call Automation<br>';
+html += '  <span>Oxyscale AI</span> &#x00B7; Work Smarter, Not Harder';
+html += '</div>';
+
+/* Inject */
+document.getElementById('root').innerHTML = html;
+
+/* ================================================================
+   INTERACTIVITY: EXPAND / COLLAPSE
+   ================================================================ */
+function toggleNode(el) {
+  var subs  = el.querySelector('.node__subs');
+  var arrow = el.querySelector('.node__arrow');
+  if (!subs) return;
+  subs.classList.toggle('node__subs--show');
+  if (arrow) arrow.classList.toggle('node__arrow--open');
+}
+</script>
+
+</body>
+</html>
